@@ -1,7 +1,7 @@
 # Better Robarts Timetable
 
 University of Toronto Robarts Library Study Room Availability Query System
-
+![alt text](image.png)
 ## Features
 
 * Batch retrieval of all study room availability
