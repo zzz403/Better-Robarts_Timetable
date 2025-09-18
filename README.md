@@ -1,66 +1,61 @@
 # Better Robarts Timetable
 
 University of Toronto Robarts Library Study Room Availability Query System
+
 ![alt text](image.png)
+
 ## Features
 
-* Batch retrieval of all study room availability
-* Supports multiple data sources (direct API, local JSON import)
-* SQLite database storage for efficient querying
-* Web interface display (based on Streamlit)
-* Supports queries by date range
+- Batch retrieval of all study room availability
+- Support multiple data sources (direct API, local JSON import)
+- SQLite database storage for efficient querying
+- Web interface display (based on Streamlit)
+- Support queries by date range
+- **One-click data refresh** - Get latest data directly in web interface
+- **Click to book** - Click available time slots to jump to booking page
 
-## Usage
+## Quick Start
 
-### 1. Data Retrieval
-
-Run the main script to fetch study room data:
+### 1. Install Dependencies
 
 ```bash
-python script.py
+pip install -r requirements.txt
 ```
 
-In the menu, choose **Option 2** - "Batch fetch availability for all rooms (API)"
-
-* Enter start date (format: YYYY-MM-DD, default: today)
-* Enter end date (format: YYYY-MM-DD, default: tomorrow)
-* Confirm to start batch data retrieval
-
-### 2. Launch Web Interface
-
-After data retrieval is complete, start the web application:
+### 2. Launch Web Application
 
 ```bash
 streamlit run app.py
 ```
 
-Then open the displayed address in your browser to view study room availability.
+### 3. Usage Instructions
+
+1. **Get Data**: Click "🔄 Get Latest Data" button in sidebar to automatically fetch all room data for today and next 2 weeks
+2. **View Schedule**: Select room type and date to view availability
+3. **Direct Booking**: Click green available time slots to automatically jump to corresponding room booking page
+
+## Interface Guide
+
+- 🟢 **Green Areas** - Available time slots (click to jump to booking)
+- 🔴 **Red Areas** - Already booked or unavailable
+- ⚪ **Blank Areas** - No data or closed hours
 
 ## Project Structure
 
-* `script.py` - Main data retrieval and processing script
-* `app.py` - Streamlit web application
-* `uoft_study_rooms.db` - SQLite database file
-* `uoft_study_rooms.csv` - Study room metadata file
-
-## Notes
-
-* First-time use requires running `script.py` to fetch data
-* Data retrieval may take a few minutes, please be patient
-* It is recommended to update data regularly for the latest availability
+- `app.py` - Streamlit web application (main usage)
+- `script.py` - Data retrieval and processing script (backend call)
+- `requirements.txt` - Python dependencies list
+- `uoft_study_rooms.db` - SQLite database file
+- `uoft_study_rooms.csv` - Room metadata file
 
 ## Dependencies
 
-* Python 3.x
-* requests
-* sqlite3
-* streamlit
-* csv
-* datetime
+- Python 3.7+
+- See `requirements.txt` for details
 
-## Quick Start
+## Notes
 
-1. Clone the project
-2. Run `python script.py`, choose Option 2 to fetch data
-3. Run `streamlit run app.py` to launch the web interface
-4. Open your browser to view study room availability
+- First-time use requires clicking refresh button in web interface to get data
+- Data retrieval may take a few minutes, please be patient
+- Recommend clicking refresh button regularly for latest availability information
+- Clicking green time slots will open booking page in new tab

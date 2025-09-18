@@ -129,6 +129,19 @@ def create_schedule_table(slots_df, selected_date, max_rooms=20):
         color: #000000;
         font-weight: bold;
         font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .available:hover {
+        background-color: #1e7e34;
+        color: white;
+    }
+    .available a {
+        display: block;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
     }
     .unavailable {
         background-color: #f8d7da;
@@ -166,7 +179,8 @@ def create_schedule_table(slots_df, selected_date, max_rooms=20):
             if not slot_data.empty:
                 status = slot_data['status'].iloc[0]
                 if status == 'available':
-                    html += '<td class="available"></td>'
+                    booking_url = f"https://libcal.library.utoronto.ca/space/{room_id}"
+                    html += f'<td class="available"><a href="{booking_url}" target="_blank"></a></td>'
                 else:
                     html += '<td class="unavailable"></td>'
             else:
@@ -233,7 +247,28 @@ def fetch_schedule_for_date(target_date, force_refresh=False):
 def main():
     st.title("📚 UofT Study Rooms - Schedule View")
     st.markdown("---")
-    
+
+    # Sidebar refresh button
+    with st.sidebar:
+        if st.button("🔄 Get Latest Data", help="Fetch all rooms from API (today + next 2 weeks). This may take a while."):
+            with st.spinner("Fetching latest data, please wait..."):
+                try:
+                    import importlib.util
+                    import os
+                    from datetime import datetime, timedelta
+                    script_path = os.path.join(os.getcwd(), 'script.py')
+                    spec = importlib.util.spec_from_file_location("script", script_path)
+                    script_module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(script_module)
+                    start_date = datetime.now().strftime('%Y-%m-%d')
+                    end_date = (datetime.now() + timedelta(weeks=2)).strftime('%Y-%m-%d')
+                    db_name = "uoft_study_rooms.db"
+                    script_module.check_all_rooms_availability_sqlite(start_date, end_date, db_name)
+                    st.success(f"Data refreshed: {start_date} ~ {end_date}")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Refresh failed: {e}")
+
     # Load data
     with st.spinner("Loading data..."):
         rooms_df, slots_df = load_data_from_db()

@@ -587,12 +587,23 @@ def check_all_rooms_availability_sqlite(start_date=None, end_date=None, db_name=
         start_date = datetime.now().strftime('%Y-%m-%d')
     if not end_date:
         end_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-    
+
+    # 清空所有time_slots表数据，保证全新插入
+    try:
+        conn = sqlite3.connect(db_name)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM time_slots')
+        conn.commit()
+        conn.close()
+        print('All previous time_slots data cleared.')
+    except Exception as e:
+        print(f'Error clearing time_slots: {e}')
+
     query_date = start_date
-    
+
     # 从数据库获取房间列表
     rooms = get_available_rooms_from_sqlite(db_name)
-    
+
     if not rooms:
         print("没有找到房间列表，请先导入房间数据")
         return
