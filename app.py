@@ -6,6 +6,15 @@ import subprocess
 import sys
 import os
 
+# Robarts library: 7314, 7466, 7474, 7708, 7816
+# Gerstein library: 7416
+# Engineering & Computer Science Library: 7945
+# Music: 7935
+# OISE: 7432, 7433, 7434
+# kelly: 7449
+# uclibrary: 7996
+# ejpratt: 7970
+
 # Set page configuration
 st.set_page_config(
     page_title="UofT Study Rooms Schedule",
@@ -179,7 +188,7 @@ def create_schedule_table(slots_df, selected_date, max_rooms=20):
             if not slot_data.empty:
                 status = slot_data['status'].iloc[0]
                 if status == 'available':
-                    booking_url = f"https://libcal.library.utoronto.ca/space/{room_id}"
+                    booking_url = f"https://libcal.library.utoronto.ca/space/{room_id}?date={selected_date}"
                     html += f'<td class="available"><a href="{booking_url}" target="_blank"></a></td>'
                 else:
                     html += '<td class="unavailable"></td>'
@@ -286,9 +295,18 @@ def main():
         "Robarts Library Stacks": 7466,
         "Robarts Library Ground Floor": 7474,
         "Robarts Library 3rd Floor": 7708,
-        "Individual Study Rooms": 7816
+        "Individual Study Rooms": 7816,
+        "Gerstein Library": 7416,
+        "Engineering & Computer Science Library": 7945,
+        "Music Library": 7935,
+        "OISE Library (Main)": 7432,
+        "OISE Library (Secondary)": 7433,
+        "OISE Library (Tertiary)": 7434,
+        "Kelly Library": 7449,
+        "UC Library": 7996,
+        "E.J. Pratt Library": 7970
     }
-    
+
     selected_gid_label = st.sidebar.selectbox(
         "Select room type",
         list(gid_options.keys())
