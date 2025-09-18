@@ -1,6 +1,6 @@
 # Better Robarts Timetable
 
-University of Toronto Robarts Library Study Room Availability Query System
+University of Toronto Robarts Library (***update: now we have all library***) Study Room Availability Query System
 
 ![alt text](image.png)
 
