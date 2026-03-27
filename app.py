@@ -6,6 +6,9 @@ import subprocess
 import sys
 import os
 
+# Use directory of this file for all relative paths (works on Streamlit Cloud)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Robarts library: 7314, 7466, 7474, 7708, 7816
 # Gerstein library: 7416
 # Engineering & Computer Science Library: 7945
@@ -23,7 +26,7 @@ st.set_page_config(
 )
 
 @st.cache_data
-def load_data_from_db(db_name="uoft_study_rooms.db"):
+def load_data_from_db(db_name=os.path.join(BASE_DIR, "uoft_study_rooms.db")):
     """Load data from SQLite database"""
     try:
         conn = sqlite3.connect(db_name)
@@ -201,7 +204,7 @@ def create_schedule_table(slots_df, selected_date, max_rooms=20):
     
     return html
 
-def get_available_dates_from_db(db_name="uoft_study_rooms.db"):
+def get_available_dates_from_db(db_name=os.path.join(BASE_DIR, "uoft_study_rooms.db")):
     """Get list of available dates from DB"""
     try:
         conn = sqlite3.connect(db_name)
@@ -229,7 +232,7 @@ def fetch_schedule_for_date(target_date, force_refresh=False):
         
         # Skip if already present (unless refresh forced)
         if not force_refresh:
-            conn = sqlite3.connect("uoft_study_rooms.db")
+            conn = sqlite3.connect(os.path.join(BASE_DIR, "uoft_study_rooms.db"))
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM time_slots WHERE query_date = ?', (target_date_str,))
             existing_count = cursor.fetchone()[0]
@@ -239,12 +242,12 @@ def fetch_schedule_for_date(target_date, force_refresh=False):
                 return True, f"Data for {target_date_str} already exists ({existing_count} records). Use refresh to update."
         
         # Import and run script.py
-        script_path = os.path.join(os.getcwd(), 'script.py')
+        script_path = os.path.join(BASE_DIR, 'script.py')
         import importlib.util
         spec = importlib.util.spec_from_file_location("script", script_path)
         script_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(script_module)
-        
+
         script_module.check_all_rooms_availability_sqlite(target_date_str, target_date_str)
         
         action = "refreshed" if force_refresh else "fetched"
@@ -259,20 +262,22 @@ def main():
 
     # Sidebar refresh button
     with st.sidebar:
+        
         if st.button("🔄 Get Latest Data", help="Fetch all rooms from API (today + next 2 weeks). This may take a while."):
             with st.spinner("Fetching latest data, please wait..."):
                 try:
                     import importlib.util
                     import os
                     from datetime import datetime, timedelta
-                    script_path = os.path.join(os.getcwd(), 'script.py')
+                    script_path = os.path.join(BASE_DIR, 'script.py')
                     spec = importlib.util.spec_from_file_location("script", script_path)
                     script_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(script_module)
                     start_date = datetime.now().strftime('%Y-%m-%d')
                     end_date = (datetime.now() + timedelta(weeks=2)).strftime('%Y-%m-%d')
-                    db_name = "uoft_study_rooms.db"
+                    db_name = os.path.join(BASE_DIR, "uoft_study_rooms.db")
                     script_module.check_all_rooms_availability_sqlite(start_date, end_date, db_name)
+                    st.cache_data.clear()  # Clear cache after data refresh
                     st.success(f"Data refreshed: {start_date} ~ {end_date}")
                     st.rerun()
                 except Exception as e:

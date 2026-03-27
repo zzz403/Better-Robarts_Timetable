@@ -579,25 +579,37 @@ def get_available_rooms_from_csv(csv_filename="uoft_study_rooms_20250916_145956.
         print(f"找不到文件 {csv_filename}")
         return []
 
-def check_all_rooms_availability_sqlite(start_date=None, end_date=None, db_name="uoft_study_rooms.db"):
+def check_all_rooms_availability_sqlite(start_date=None, end_date=None, db_name=None):
     """检查所有房间的可用时间并存储到SQLite数据库 - 优化版本，避免重复抓取"""
     
+    if not db_name:
+        db_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uoft_study_rooms.db")
+
     # 设置查询日期
     if not start_date:
         start_date = datetime.now().strftime('%Y-%m-%d')
     if not end_date:
         end_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
 
-    # 清空所有time_slots表数据，保证全新插入
+    # 删除整个数据库文件，保证全新开始
     try:
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM time_slots')
-        conn.commit()
-        conn.close()
-        print('All previous time_slots data cleared.')
+        if os.path.exists(db_name):
+            os.remove(db_name)
+            print(f'Deleted existing database: {db_name}')
+        
+        # 重新初始化数据库和导入房间数据
+        init_sqlite_database(db_name)
+        
+        # 重新导入房间数据
+        csv_file = get_latest_csv_file()
+        if csv_file:
+            save_rooms_to_sqlite(csv_file, db_name)
+            print(f'Re-imported room data from {csv_file}')
+        else:
+            print('Warning: No CSV file found for room metadata')
+            
     except Exception as e:
-        print(f'Error clearing time_slots: {e}')
+        print(f'Error resetting database: {e}')
 
     query_date = start_date
 
@@ -705,12 +717,13 @@ def check_all_rooms_availability_sqlite(start_date=None, end_date=None, db_name=
 
 def get_latest_csv_file():
     """获取最新的房间CSV文件"""
-    csv_files = [f for f in os.listdir('.') if f.startswith('uoft_study_rooms') and f.endswith('.csv')]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_files = [f for f in os.listdir(script_dir) if f.startswith('uoft_study_rooms') and f.endswith('.csv')]
     if not csv_files:
         return None
     # 按文件名排序，最新的在最后
     csv_files.sort()
-    return csv_files[-1]
+    return os.path.join(script_dir, csv_files[-1])
 
 def main():
     print("UofT Study Room Availability Query System")
